@@ -14,9 +14,9 @@ const { IamAuthenticator } = require('ibm-watson/auth');
 const naturalLanguageUnderstanding = new NaturalLanguageUnderstandingV1({
   version: '2021-03-25',
   authenticator: new IamAuthenticator({
-    apikey: '{apikey}',
+    apikey: api_key,
   }),
-  serviceUrl: '{url}',
+  serviceUrl: api_url,
 });
 return naturalLanguageUnderstanding;
 }
@@ -31,8 +31,54 @@ app.get("/",(req,res)=>{
   });
 
 app.get("/url/emotion", (req,res) => {
+/*const analyzeParams = {
+  'url': req.query.url,
+  'features': {
+    'entities': {
+      'emotion': true,
+      'sentiment': false,
+      'limit': 3,
+    },
+    'keywords': {
+      'emotion': true,
+      'sentiment': false,
+      'limit': 3,
+    },
+  },
+};*/
 
-    return res.send({"happy":"90","sad":"10"});
+const analyzeParams = {
+  'url': 'www.ibm.com',
+  'features': {
+    'entities': {
+      'emotion': true,
+      'sentiment': true,
+      'limit': 2,
+    },
+    'keywords': {
+      'emotion': true,
+      'sentiment': true,
+      'limit': 2,
+    },
+  },
+};
+
+
+//    return res.send({"happy":"90","sad":"10"});
+naturalLanguageUnderstanding = getNLUInstance();
+naturalLanguageUnderstanding.analyze(analyzeParams)
+  .then(analysisResults => {
+    //console.log(JSON.stringify(analysisResults, null, 2));
+    //return res.send(JSON.stringify(analysisResults, null, 2));
+
+    const emos = analysisResults["result"]["keywords"][0]["emotion"];
+    return res.send(JSON.stringify(Object.entries(emos)));
+})
+  .catch(err => {
+    //console.log('error:', err);
+    return res.send("An error occurred :"+ err);
+  });
+
 });
 
 app.get("/url/sentiment", (req,res) => {
